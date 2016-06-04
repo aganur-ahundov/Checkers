@@ -16,15 +16,13 @@ Board::Board(QWidget *parent)
    {
        for ( int j = 0; j < BOARD_HEIGHT; j++ )
        {
+           m_board[i][j] = TYPE_BLACK;
                if (  ( (i + 1) + (j + 1) )%2 == 0  )
                {
-
                    if( i < 3 )
                      m_board[i][j] = TYPE_BLACK_CHECKER;
                    else if ( i > 4 )
                      m_board[i][j] = TYPE_WHITE_CHECKER;
-                   else
-                     m_board[i][j] = TYPE_BLACK;
                }
                else
                    m_board[i][j] = TYPE_WHITE;
@@ -41,8 +39,30 @@ Board::Board(QWidget *parent)
 
 void Board::mousePressEvent(QMouseEvent *_e)
 {
-    int x = _e->x()/100;
-    int y = _e->y()/100;
+    int i = _e->x()/100;
+    int j = _e->y()/100;
+
+//    if(m_board[j][i] == TYPE_NEXT_STEP)
+//    {
+//        QMessageBox b("test", "next_step" + QString::number(i)+" "+QString::number(j),
+//                      QMessageBox::Information,
+//                      QMessageBox::Yes,
+//                      QMessageBox::No
+//                      , QMessageBox::Cancel);
+//        b.exec();
+//    }
+
+//    if(m_board[j][i] == TYPE_BLACK)
+//    {
+//        QMessageBox b("test", "black" + QString::number(i)+" "+QString::number(j),
+//                      QMessageBox::Information,
+//                      QMessageBox::Yes,
+//                      QMessageBox::No
+//                      , QMessageBox::Cancel);
+//        b.exec();
+//    }
+
+    emit clicked( j, i );
 
 }
 
@@ -59,6 +79,7 @@ void Board::paintEvent( QPaintEvent* _e )
             switch ( m_board[j][i]  )
             {
             case TYPE_BLACK:;
+                m_painter.drawBlackCell(i,j);
                 break;
             case TYPE_WHITE:
                 m_painter.drawWhiteCell( i, j);
@@ -74,6 +95,9 @@ void Board::paintEvent( QPaintEvent* _e )
                 break;
             case TYPE_WHITE_KING:
                 m_painter.drawWhiteKing( i, j );
+                break;
+            case TYPE_NEXT_STEP:
+                m_painter.drawFrameForNextStep( i, j );
                 break;
             default:
                 Q_ASSERT ( 0 );

@@ -5,9 +5,14 @@
 #include <memory>
 #include "gamepainter.h"
 
+
+class Controller;
+
 class Board : public QWidget
 {
     Q_OBJECT
+
+    friend Controller;
 public:
 
     enum Cell
@@ -31,6 +36,7 @@ public:
 
 signals:
     void type_was_changed();
+    void clicked( int _i, int _j );
 
 public slots:
 //    void cell_was_selected();

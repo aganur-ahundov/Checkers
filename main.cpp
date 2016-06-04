@@ -1,6 +1,8 @@
 #include "mainwindow.h"
-#include "board.h"
 #include <QApplication>
+
+
+#include "controller.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,7 +10,7 @@ int main(int argc, char *argv[])
     //MainWindow w;
    // w.show();
 
-    Board b;
-    b.show();
+    Controller c;
+    c.show();
     return a.exec();
 }

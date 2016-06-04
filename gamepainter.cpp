@@ -4,7 +4,7 @@
 
 void GamePainter::drawBlackCell( int _i, int _j )
 {
-    setBrush( QBrush( Qt::black ) );
+    setBrush( QBrush( QColor( 103, 57, 35 ) ) );
     drawRect(
                 _i * CELL_WIDTH,
                 _j * CELL_HEIGHT,
@@ -76,24 +76,16 @@ void GamePainter::drawWhiteKing( int _i, int _j )
 }
 
 
-//QImage GamePainter::createImageBG()
-//{
-//   QImage sourceImage( QSize(CELL_WIDTH, CELL_HEIGHT), QImage::Format_ARGB32_Premultiplied  );
-//   return sourceImage;
-//}
+void GamePainter::drawFrameForNextStep(int _i, int _j)
+{
+    setPen( QPen( Qt::blue, 5 ) );
+    setBrush(QBrush( QColor( 103, 57, 35 ) ));
+    drawRect(
+                _i * CELL_WIDTH,
+                _j * CELL_HEIGHT,
+                CELL_WIDTH,
+                CELL_HEIGHT
+                );
 
-//QLabel GamePainter::drawChecker(int _i, int _j, Board::Cell _t)
-//{
-//    QImage source_cell = m_painter.createImageBG();
-//    m_painter.begin( &source_cell );
-//    m_painter.setRenderHint( QPainter::Antialiasing, true );
-
-
-//    m_painter.drawBlackCell( i, j );
-//    m_painter.end();
-
-//    QImage result_cell = m_painter.createImageBG();
-//    m_painter.begin( result_cell );
-//    m_painter.setRenderHint( QPainter::Antialiasing, true );
-//    m_painter.setCompositionMode( QPainter );
-//}
+    setPen( Qt::black );
+}
