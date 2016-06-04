@@ -12,9 +12,12 @@ class Board : public QWidget
 {
     Q_OBJECT
 
+    //предостовляем доступ к полю классу контроллеру
+    //что бы было меньше вызовов геттеров и сеттеров
     friend Controller;
 public:
 
+    //все возможные клетки на доске
     enum Cell
     {
         TYPE_BLACK_CHECKER,
@@ -26,7 +29,7 @@ public:
         TYPE_NEXT_STEP
     };
 
-
+    //высота и длина шашек по-умолчанию
     static const short BOARD_HEIGHT = 8;
     static const short BOARD_WIDTH  = 8;
 
@@ -35,23 +38,21 @@ public:
     ~Board() = default;
 
 signals:
-    void type_was_changed();
-    void clicked( int _i, int _j );
-
-public slots:
-//    void cell_was_selected();
+    void clicked( int _i, int _j );  //сигналим о том, что мышь кликнула по виджету
 
 public:
-    Cell getType   ( int _x, int _j ) const;
-    void changeType( int _x, int _j, Cell _t );
+    //доступ к полям есть у класса контроллер, но вдруг пригодиться в других случаях
+    Cell getType   ( int _x, int _j ) const;   //а вдруг пригодиться
+    void changeType( int _x, int _j, Cell _t );//вряд ли, но все же
 
 protected:
+    //переопределяем события
     void mousePressEvent( QMouseEvent* _e );
     void paintEvent( QPaintEvent* _e );
 
 private:
-    Cell m_board[BOARD_WIDTH][BOARD_HEIGHT];
-    GamePainter m_painter;
+    Cell m_board[BOARD_WIDTH][BOARD_HEIGHT]; //матрица - поле
+    GamePainter m_painter;                   //класс прорисует приложение
 };
 
 #endif // CHECKER_H

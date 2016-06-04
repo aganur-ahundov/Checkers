@@ -13,17 +13,17 @@ public:
     ~Controller();
 
 public:
-    void start_game();
+    void start_game();  //старт
 
 public slots:
-    void selected ( int _i, int _j );
-    void show();
+    void selected ( int _i, int _j ); //обрабатываем нажатие мыши
+    void show();                       //переопределяем функцию
 
 private:
-    void unselect();
+    void unselect();          //убираем все выделения
 
-    void whiteToMove( int _i, int _j );
-    void blackToMove( int _i, int _j );
+    void whiteToMove( int _i, int _j ); //ходят белые
+    void blackToMove( int _i, int _j ); //ходят черные
 
 private:
     Board* m_board;     //игровая доска

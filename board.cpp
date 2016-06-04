@@ -6,12 +6,10 @@
 
 
 
-
-
-
 Board::Board(QWidget *parent)
     : QWidget(parent)
 {
+    //задаем начальное состояние доски
    for ( int i = 0; i < BOARD_WIDTH; i++ )
    {
        for ( int j = 0; j < BOARD_HEIGHT; j++ )
@@ -29,6 +27,10 @@ Board::Board(QWidget *parent)
        }
    }
 
+   //начальный фон доски - коричневый.
+   //что бы под фигурами шашек было видно,
+   //что шашка стоит на "черной" клетке
+   //по-другому будут никому не нужные сложности
    QPalette p;
    p.setBrush( this->backgroundRole(), QBrush( QColor( 103, 57, 35 ) ) );
    setPalette(p);
@@ -70,6 +72,7 @@ void Board::mousePressEvent(QMouseEvent *_e)
 void Board::paintEvent( QPaintEvent* _e )
 {
 
+    //рисуем. все просто
     m_painter.begin( this );
     m_painter.setRenderHint( QPainter::Antialiasing, true );
     for( int i = 0; i < BOARD_WIDTH; i++ )
