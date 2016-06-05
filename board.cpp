@@ -102,6 +102,9 @@ void Board::paintEvent( QPaintEvent* _e )
             case TYPE_NEXT_STEP:
                 m_painter.drawFrameForNextStep( i, j );
                 break;
+            case TYPE_BEAT:
+                m_painter.drawFrameForNextStep( i, j );
+                break;
             default:
                 Q_ASSERT ( 0 );
                 break;

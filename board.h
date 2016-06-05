@@ -26,7 +26,8 @@ public:
         TYPE_WHITE_KING,
         TYPE_WHITE,
         TYPE_BLACK,
-        TYPE_NEXT_STEP
+        TYPE_NEXT_STEP,
+        TYPE_BEAT
     };
 
     //высота и длина шашек по-умолчанию

@@ -22,8 +22,14 @@ public slots:
 private:
     void unselect();          //убираем все выделения
 
-    void whiteToMove( int _i, int _j ); //ходят белые
-    void blackToMove( int _i, int _j ); //ходят черные
+    void whiteToMove        ( int _i, int _j ); //ходят белые
+    void blackToMove        ( int _i, int _j ); //ходят черные
+    bool whiteToBeat        ( int _i, int _j ); //выделяем ячейки что бы бить
+    bool blackToBeat        ( int _i, int _j );
+    void move_checker       ( int _i, int _j ); //вспомогательная функция. осущ-т ход
+    void beat               ( int _i, int _j ); //даем возможность ударить
+    void removeTheBattered  ( int _i, int _j ); //убираем битую шашку
+
 
 private:
     Board* m_board;     //игровая доска
