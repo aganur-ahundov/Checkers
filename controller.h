@@ -20,15 +20,26 @@ public slots:
     void show();                       //переопределяем функцию
 
 private:
-    void unselect();          //убираем все выделения
+    void if_moving( int _i, int _j );
 
-    void whiteToMove        ( int _i, int _j ); //ходят белые
-    void blackToMove        ( int _i, int _j ); //ходят черные
+private:
+    void unselect();                            //убираем все выделения
+    void checkerToMove      ( int _i, int _j ); //ход шашки
+    void checker_selected   ( int _i, int _j ); //реакция программы на выделение шашки
     bool whiteToBeat        ( int _i, int _j ); //выделяем ячейки что бы бить
     bool blackToBeat        ( int _i, int _j );
     void move_checker       ( int _i, int _j ); //вспомогательная функция. осущ-т ход
     void beat               ( int _i, int _j ); //даем возможность ударить
     void removeTheBattered  ( int _i, int _j ); //убираем битую шашку
+    bool black_checker_beat ( int _i, int _j, int _stepI, int _stepJ ); //вспомогательная функция, для определения направления боя
+    bool white_checker_beat ( int _i, int _j, int _stepI, int _stepJ ); //-,-,-
+    bool check_board_for_battle();  //проверяем, есть ли возможность ударить, перед ходом
+
+private: //все необходимые функции для реализации дамки
+    void king_was_selected              ( int _i, int _j ); //дамка выбрана - поехали
+    void setAllNewStepsByAllDirections  ( int _i, int _j ); //отмечает все клетки, куда может ходить дамка
+    void move_king                      ( int _i, int _j ); //ходим дамкой
+
 
 
 private:

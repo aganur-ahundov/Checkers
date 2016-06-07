@@ -1,5 +1,9 @@
-#ifndef CHECKER_H
-#define CHECKER_H
+#ifndef BOARD_H
+#define BOARD_H
+
+
+
+
 
 #include <QWidget>
 #include <memory>
@@ -56,4 +60,4 @@ private:
     GamePainter m_painter;                   //класс прорисует приложение
 };
 
-#endif // CHECKER_H
+#endif // BOARD_H

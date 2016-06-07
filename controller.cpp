@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QPaintEvent>
 #include "board.h"
+#include <QMessageBox>
+
 
 Controller::Controller( QWidget* _parent )
     :QWidget( _parent )
@@ -38,9 +40,172 @@ void Controller::start_game()
     m_board->show();
 }
 
+
 void Controller::show()
 {
     m_board->show(); //выводим виджет-доску
+}
+
+
+bool Controller::check_board_for_battle()
+{
+    for( int i = 0; i < m_board->BOARD_HEIGHT; i++ )
+    {
+        for( int j = 0; j < m_board->BOARD_WIDTH; j++ )
+        {
+            if ( white_moving && m_board->m_board[i][j] == Board::TYPE_WHITE_CHECKER )
+            {
+                if ( whiteToBeat( i, j ) )
+                    return true;
+            }
+            else if ( white_moving == false && m_board->m_board[i][j] == Board::TYPE_BLACK_CHECKER  )
+            {
+                if ( blackToBeat( i,j ) )
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+void Controller::setAllNewStepsByAllDirections( int _i, int _j )
+{
+    int i = _i + 1;
+    int j = _j - 1;
+
+    while( m_board->m_board[i][j] == Board::TYPE_BLACK
+           && i < m_board->BOARD_HEIGHT
+           && j >= 0)
+    {
+
+        m_board->m_board[i][j] = Board::TYPE_NEXT_STEP;
+
+        ++i;
+        --j;
+    }
+
+
+
+    i = _i + 1;
+    j = _j + 1;
+
+    while( m_board->m_board[i][j] == Board::TYPE_BLACK
+           && i < m_board->BOARD_HEIGHT
+           && j < m_board->BOARD_WIDTH)
+    {
+            m_board->m_board[i][j] = Board::TYPE_NEXT_STEP;
+
+        ++i;
+        ++j;
+    }
+
+
+
+    i = _i - 1;
+    j = _j - 1;
+
+    while( m_board->m_board[i][j] == Board::TYPE_BLACK
+           && i >= 0
+           && j > 0)
+    {
+            m_board->m_board[i][j] = Board::TYPE_NEXT_STEP;
+
+        --i;
+        --j;
+    }
+
+
+    i = _i - 1;
+    j = _j + 1;
+
+    while( m_board->m_board[i][j] == Board::TYPE_BLACK
+           && i >= 0
+           && j < m_board->BOARD_WIDTH)
+    {
+
+            m_board->m_board[i][j] = Board::TYPE_NEXT_STEP;
+
+        --i;
+        ++j;
+    }
+
+    is_selected = true;
+}
+
+
+void Controller::king_can_beat( int _i, int _j )
+{
+
+}
+
+
+void Controller::king_was_selected( int _i, int _j )
+{
+    if( ( white_moving && m_board->m_board[_i][_j] == Board::TYPE_WHITE_KING )
+            || ( white_moving == false && m_board->m_board[_i][_j] == Board::TYPE_BLACK_KING ) )
+     {
+        if ( king_can_beat( _i, _j ) == false )
+            setAllNewStepsByAllDirections( _i, _j );
+     }
+
+}
+
+void Controller::if_moving( int _i, int _j )
+{
+    if( m_board->m_board[_i][_j] == Board::TYPE_NEXT_STEP )
+       {
+         if ( check_board_for_battle() == false )
+         {
+             if ( m_board->m_board[m_currI][m_currJ] == Board::TYPE_BLACK_KING
+                  || m_board->m_board[m_currI][m_currJ] == Board::TYPE_WHITE_KING )
+                 move_king( _i, _j );
+             else
+                 move_checker(_i, _j);
+         }
+         else
+         {
+             unselect();
+             QMessageBox msg( "Ход невозможен"
+                              , "Вы обязаны ударить вражескую шашку."
+                              , QMessageBox::Critical
+                              , QMessageBox::Ok
+                              , 0
+                              , 0
+                              );
+             msg.exec();
+         }
+       }
+}
+
+
+void Controller::selected(int _i, int _j)
+{
+
+    if ( m_board->m_board[_i][_j] == Board::TYPE_BLACK_KING
+         || m_board->m_board[_i][_j] == Board::TYPE_WHITE_KING )
+        king_was_selected(_i, _j);
+    else
+        checker_selected( _i, _j );
+
+   //если мы ходим
+    if_moving( _i, _j );
+
+   //если бьем
+    if ( m_board->m_board[_i][_j] == Board::TYPE_BEAT )
+       beat( _i, _j );
+
+
+        m_currI = _i;   //запоминаем координаты, что бы потом осуществить ход
+        m_currJ = _j;
+
+    //что бы не висели не нужные выделения
+    if( is_selected == false )
+      unselect();
+
+    //перересуем доску
+      emit m_board->repaint();
 }
 
 
@@ -55,49 +220,81 @@ void Controller::unselect()
 }
 
 
-void Controller::whiteToMove(int _i, int _j )
+void Controller::checkerToMove(int _i, int _j)
 {
     unselect();          //убираем все выделения
 
-    if( whiteToBeat( _i, _j ) == false )
-    {
-    //проверяем пустые ли клеточки, для хода
-    if( m_board->m_board[ _i - 1 ][ _j - 1 ] == Board::TYPE_BLACK )
-      {
-        m_board->m_board[ _i - 1 ][ _j - 1 ] = Board::TYPE_NEXT_STEP;
-      }
+    bool is_beat = false;
 
-    if( m_board->m_board[ _i - 1 ][ _j + 1 ] == Board::TYPE_BLACK )
-      {
-        m_board->m_board[ _i - 1 ][ _j + 1 ] = Board::TYPE_NEXT_STEP;
-      }
+    if( white_moving )
+       is_beat = whiteToBeat( _i + 1, _j );
+    else
+       is_beat = blackToBeat( _i - 1, _j );
 
-    is_selected = true;  //ставим флаг, да бы не сбились выделения в конце функции selected
+    if( is_beat == false )
+      {
+        //проверяем пустые ли клеточки, для хода
+        if( m_board->m_board[ _i ][ _j - 1 ] == Board::TYPE_BLACK )
+          {
+            m_board->m_board[ _i ][ _j - 1 ] = Board::TYPE_NEXT_STEP;
+          }
+
+        if( m_board->m_board[ _i ][ _j + 1 ] == Board::TYPE_BLACK )
+          {
+            m_board->m_board[ _i ][ _j + 1 ] = Board::TYPE_NEXT_STEP;
+          }
 
     }
+
+    is_selected = true;
+
 }
 
-void Controller::blackToMove(int _i, int _j)
+
+void Controller::checker_selected( int _i, int _j )
 {
-    unselect();          //убираем все выделения
+            //если ходят белые, то
+            if ( white_moving == true )
+            {
+                //если мы успешно выбрали белую шашку
+                if ( m_board->m_board[_i][_j] == Board::TYPE_WHITE_CHECKER )
+                    checkerToMove(_i - 1, _j); //выделяем все клеточки куда можно ходить
+                else
+                    is_selected = false;
+            }
+            else //если ходят черные
+            {
+                //если мы успешно выбрали черную шашку
+                if ( m_board->m_board[_i][_j] == Board::TYPE_BLACK_CHECKER )
+                   checkerToMove(_i + 1, _j); //выделяем все клеточки куда можно ходить
+                else
+                    is_selected = false; //если промахнулись, то убираем все выделения
+            }
 
-    if( blackToBeat(_i, _j) == false )
-    {
-        //проверяем пустые ли клеточки, для хода
-        if( m_board->m_board[ _i + 1 ][ _j - 1 ] == Board::TYPE_BLACK )
-          {
-            m_board->m_board[ _i + 1 ][ _j - 1 ] = Board::TYPE_NEXT_STEP;
-          }
-
-        if( m_board->m_board[ _i + 1 ][ _j + 1 ] == Board::TYPE_BLACK )
-          {
-            m_board->m_board[ _i + 1 ][ _j + 1 ] = Board::TYPE_NEXT_STEP;
-          }
+}
 
 
-        is_selected = true;  //ставим флаг, да бы не сбились выделения в конце функции selected
+bool Controller::white_checker_beat( int _i, int _j, int _stepI, int _stepJ )
+{
+    if( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_BLACK_CHECKER
+                && m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] == Board::TYPE_BLACK )
+        {
+         m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] = Board::TYPE_BEAT;
+         return true;
+        }
+    return false;
+}
 
-    }
+
+bool Controller::black_checker_beat( int _i, int _j, int _stepI, int _stepJ )
+{
+    if( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_WHITE_CHECKER
+                        && m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] == Board::TYPE_BLACK )
+            {
+               m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] = Board::TYPE_BEAT;
+              return true;
+            }
+    return false;
 }
 
 
@@ -107,37 +304,29 @@ bool Controller::whiteToBeat(int _i, int _j)
     bool need_to_beat = false; //если есть, что ударить. других ходов быть не может.
 
     //бить вперед
-    if( m_board->m_board[ _i - 1 ][ _j + 1 ] == Board::TYPE_BLACK_CHECKER
-                && m_board->m_board[ _i - 2 ][ _j + 2 ] == Board::TYPE_BLACK )
-       {
-         m_board->m_board[ _i - 2 ][ _j + 2 ] = Board::TYPE_BEAT;
-         is_selected = true;
-         need_to_beat = true;
-       }
 
-    if( m_board->m_board[ _i - 1 ][ _j - 1 ] == Board::TYPE_BLACK_CHECKER
-                 && m_board->m_board[ _i - 2 ][ _j - 2 ] == Board::TYPE_BLACK )
-        {
-          m_board->m_board[ _i - 2 ][ _j - 2 ] = Board::TYPE_BEAT;
-          is_selected = true;
-          need_to_beat = true;
-        }
-
-    //Проверям врагов в округе сзади
-    if( m_board->m_board[ _i + 1 ][ _j - 1 ] == Board::TYPE_BLACK_CHECKER
-             && m_board->m_board[ _i + 2 ][ _j - 2 ] == Board::TYPE_BLACK )
+    if( white_checker_beat( _i, _j, -1, 1 ) )
     {
-      m_board->m_board[ _i + 2 ][ _j - 2 ] = Board::TYPE_BEAT;
-      is_selected = true;
-      need_to_beat = true;
+        is_selected = true;
+        need_to_beat = true;
     }
 
-    if( m_board->m_board[ _i + 1 ][ _j + 1 ] == Board::TYPE_BLACK_CHECKER
-             && m_board->m_board[ _i + 2 ][ _j + 2 ] == Board::TYPE_BLACK )
+    if( white_checker_beat( _i, _j, -1, -1 ) )
     {
-      m_board->m_board[ _i + 2 ][ _j + 2 ] = Board::TYPE_BEAT;
-      is_selected = true;
-      need_to_beat = true;
+        is_selected = true;
+        need_to_beat = true;
+    }
+
+    if( white_checker_beat( _i, _j, 1, -1 ) )
+    {
+        is_selected = true;
+        need_to_beat = true;
+    }
+
+    if( white_checker_beat( _i, _j, 1, 1 ) )
+    {
+        is_selected = true;
+        need_to_beat = true;
     }
 
     return need_to_beat;
@@ -149,80 +338,49 @@ bool Controller::blackToBeat(int _i, int _j)
     bool need_to_beat = false; //если есть, что ударить. других ходов быть не может.
 
     //проверяем врагов спереди
-    if( m_board->m_board[ _i + 1 ][ _j - 1 ] == Board::TYPE_WHITE_CHECKER
-                        && m_board->m_board[ _i + 2 ][ _j - 2 ] == Board::TYPE_BLACK )
-            {
-               m_board->m_board[ _i + 2 ][ _j - 2 ] = Board::TYPE_BEAT;
-               is_selected = true;
-               need_to_beat = true;
-            }
-    if( m_board->m_board[ _i + 1 ][ _j + 1 ] == Board::TYPE_WHITE_CHECKER
-                     && m_board->m_board[ _i + 2 ][ _j + 2 ] == Board::TYPE_BLACK )
-            {
-              m_board->m_board[ _i + 2 ][ _j + 2 ] = Board::TYPE_BEAT;
-              is_selected = true;
-              need_to_beat = true;
-            }
+    if ( black_checker_beat( _i, _j, 1, -1) )
+    {
+        is_selected = true;
+        need_to_beat = true;
+    }
 
+    if ( black_checker_beat( _i, _j, 1, 1) )
+    {
+        is_selected = true;
+        need_to_beat = true;
+    }
 
-    //проверяем врагов сзади
-    if( m_board->m_board[ _i - 1 ][ _j + 1 ] == Board::TYPE_WHITE_CHECKER
-                     && m_board->m_board[ _i - 2 ][ _j + 2 ] == Board::TYPE_BLACK )
-            {
-              m_board->m_board[ _i - 2 ][ _j + 2 ] = Board::TYPE_BEAT;
-              is_selected = true;
-              need_to_beat = true;
-            }
+    if ( black_checker_beat( _i, _j, -1, -1) )
+    {
+        is_selected = true;
+        need_to_beat = true;
+    }
 
-    if( m_board->m_board[ _i - 1 ][ _j - 1 ] == Board::TYPE_WHITE_CHECKER
-                       && m_board->m_board[ _i - 2 ][ _j - 2 ] == Board::TYPE_BLACK )
-           {
-              m_board->m_board[ _i - 2 ][ _j - 2 ] = Board::TYPE_BEAT;
-              is_selected = true;
-              need_to_beat = true;
-           }
+    if ( black_checker_beat( _i, _j, -1, 1) )
+    {
+        is_selected = true;
+        need_to_beat = true;
+    }
 
     return need_to_beat;
 }
 
 
-void Controller::selected(int _i, int _j)
+void Controller::move_king( int _i, int _j )
 {
-        //если ходят белые, то
-        if ( white_moving == true )
-        {
-            //если мы успешно выбрали белую шашку
-            if ( m_board->m_board[_i][_j] == Board::TYPE_WHITE_CHECKER )
-                whiteToMove(_i, _j); //выделяем все клеточки куда можно ходить
-            else
-                is_selected = false;
-        }
-        else //если ходят черные
-        {
-            //если мы успешно выбрали черную шашку
-            if ( m_board->m_board[_i][_j] == Board::TYPE_BLACK_CHECKER )
-               blackToMove(_i, _j); //выделяем все клеточки куда можно ходить
-            else
-                is_selected = false; //если промахнулись, то убираем все выделения
-        }
+    if ( white_moving )
+    {
+        m_board->m_board[_i][_j] = Board::TYPE_WHITE_KING;
+        m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+    }
+    else
+    {
+        m_board->m_board[_i][_j] = Board::TYPE_BLACK_KING;
+        m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+    }
 
-        //если мы ходим
-        if( m_board->m_board[_i][_j] == Board::TYPE_NEXT_STEP )
-            move_checker(_i, _j);
-        //если бьем
-        else if ( m_board->m_board[_i][_j] == Board::TYPE_BEAT )
-             beat( _i, _j );
-
-
-        m_currI = _i;   //запоминаем координаты, что бы потом осуществить ход
-        m_currJ = _j;
-
-        //что бы не висели не нужные выделения
-        if( is_selected == false )
-            unselect();
-
-        //перересуем доску
-      emit m_board->repaint();
+    white_moving = !white_moving;
+    is_selected = false;
 }
 
 
@@ -231,16 +389,33 @@ void Controller::move_checker(int _i, int _j)
     //если ходим белыми
    if( white_moving )
    {
-       //меняем местами состояния
-       m_board->m_board[_i][_j] = Board::TYPE_WHITE_CHECKER;
-       m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       if( _i == 0 )//если достигли конца - делаем дамку
+       {
+           m_board->m_board[_i][_j] = Board::TYPE_WHITE_KING;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+        else
+       {
+           //меняем местами состояния
+           m_board->m_board[_i][_j] = Board::TYPE_WHITE_CHECKER;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
 
    }
    else
    {
        //тоже самое для черных
-       m_board->m_board[_i][_j] = Board::TYPE_BLACK_CHECKER;
-       m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+
+       if( _i == m_board->BOARD_HEIGHT - 1 )
+       {
+           m_board->m_board[_i][_j] = Board::TYPE_BLACK_KING;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+       else
+        {
+           m_board->m_board[_i][_j] = Board::TYPE_BLACK_CHECKER;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
    }
     white_moving = !white_moving;  //даем ход противнику
     is_selected = false;
@@ -254,9 +429,18 @@ void Controller::beat(int _i,  int _j)
     //если ходим белыми
    if( white_moving )
    {
-       //меняем местами состояния
-       m_board->m_board[_i][_j] = Board::TYPE_WHITE_CHECKER;
-       m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       if( _i == 0 )//если достигли конца - делаем дамку
+       {
+           m_board->m_board[_i][_j] = Board::TYPE_WHITE_KING;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+        else
+       {
+           //меняем местами состояния
+           m_board->m_board[_i][_j] = Board::TYPE_WHITE_CHECKER;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+
        removeTheBattered(_i, _j);
        m_currI = _i;
        m_currJ = _j;
@@ -264,9 +448,18 @@ void Controller::beat(int _i,  int _j)
    }
    else
    {
-       //тоже самое для черных
-       m_board->m_board[_i][_j] = Board::TYPE_BLACK_CHECKER;
-       m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       if( _i == m_board->BOARD_HEIGHT - 1 )
+       {
+           m_board->m_board[_i][_j] = Board::TYPE_BLACK_KING;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+       else
+        {
+           //тоже самое для черных
+           m_board->m_board[_i][_j] = Board::TYPE_BLACK_CHECKER;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+       }
+
        removeTheBattered(_i,_j);
        m_currI = _i;
        m_currJ = _j;

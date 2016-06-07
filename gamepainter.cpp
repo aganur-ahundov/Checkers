@@ -56,8 +56,8 @@ void GamePainter::drawBlackKing( int _i, int _j )
 {
     setBrush( QBrush( QColor( 200, 200, 200 ) ) );
     drawEllipse(
-                _i * CELL_WIDTH + CELL_WIDTH/2,
-                _j * CELL_HEIGHT + CELL_WIDTH/2,
+                _i * CELL_WIDTH,
+                _j * CELL_HEIGHT,
                 CELL_WIDTH,
                 CELL_HEIGHT
                 );
@@ -68,8 +68,8 @@ void GamePainter::drawWhiteKing( int _i, int _j )
 {
     setBrush( QBrush( QColor( 50, 50 , 50 ) ) );
     drawEllipse(
-                _i * CELL_WIDTH + CELL_WIDTH/2,
-                _j * CELL_HEIGHT + CELL_WIDTH/2,
+                _i * CELL_WIDTH,
+                _j * CELL_HEIGHT,
                 CELL_WIDTH,
                 CELL_HEIGHT
                 );
