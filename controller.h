@@ -39,6 +39,8 @@ private: //все необходимые функции для реализац�
     void king_was_selected              ( int _i, int _j ); //дамка выбрана - поехали
     void setAllNewStepsByAllDirections  ( int _i, int _j ); //отмечает все клетки, куда может ходить дамка
     void move_king                      ( int _i, int _j ); //ходим дамкой
+    bool king_can_beat                  ( int _i, int _j );
+    void king_beated                    ( int _i, int _j );
 
 
 

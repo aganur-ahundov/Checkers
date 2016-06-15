@@ -27,15 +27,20 @@ Board::Board(QWidget *parent)
        }
    }
 
+
+   setFixedSize( 800, 800 );
+
    //начальный фон доски - коричневый.
    //что бы под фигурами шашек было видно,
    //что шашка стоит на "черной" клетке
    //по-другому будут никому не нужные сложности
    QPalette p;
-   p.setBrush( this->backgroundRole(), QBrush( QColor( 103, 57, 35 ) ) );
+   QPixmap pm("../Checkers_v2/resources/Board.png");
+   pm = pm.scaled( 1415, 900 );
+   p.setBrush( this->backgroundRole(), QBrush( pm ) );
+
    setPalette(p);
 
-   resize( 800, 800 );
 }
 
 

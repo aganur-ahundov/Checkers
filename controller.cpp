@@ -63,10 +63,22 @@ bool Controller::check_board_for_battle()
                 if ( blackToBeat( i,j ) )
                     return true;
             }
+            else if( m_board->m_board[i][j] == Board::TYPE_WHITE_KING && white_moving )
+            {
+                if( king_can_beat( i, j ) )
+                    return true;
+            }
+            else if( m_board->m_board[i][j] == Board::TYPE_BLACK_KING && white_moving == false )
+            {
+                if( king_can_beat( i, j ) )
+                    return true;
+            }
         }
     }
     return false;
 }
+
+
 
 
 
@@ -79,11 +91,12 @@ void Controller::setAllNewStepsByAllDirections( int _i, int _j )
            && i < m_board->BOARD_HEIGHT
            && j >= 0)
     {
-
         m_board->m_board[i][j] = Board::TYPE_NEXT_STEP;
 
         ++i;
         --j;
+
+
     }
 
 
@@ -135,14 +148,166 @@ void Controller::setAllNewStepsByAllDirections( int _i, int _j )
 }
 
 
-void Controller::king_can_beat( int _i, int _j )
+bool Controller::king_can_beat( int _i, int _j )
 {
+    Board::Cell enemy;
+    Board::Cell enemyKing;
 
+    if( white_moving )
+    {
+        enemy = Board::TYPE_BLACK_CHECKER;
+        enemyKing = Board::TYPE_BLACK_KING;
+    }
+    else
+     {
+        enemy = Board::TYPE_WHITE_CHECKER;
+        enemyKing = Board::TYPE_WHITE_KING;
+    }
+
+
+    /*----------------------------------------------------------------------*/
+    int     i = _i + 1;
+    int     j = _j - 1;
+    bool    need_to_beat = false;
+    is_selected = false;
+
+    while( m_board->m_board[i][j] == Board::TYPE_BLACK
+           && i < m_board->BOARD_HEIGHT
+           && j >= 0 )
+    {
+        ++i;
+        --j;
+    }
+
+    if(  m_board->m_board[i + 1][j - 1] == Board::TYPE_BLACK
+         && ( m_board->m_board[i][j] == enemy || m_board->m_board[i][j] == enemyKing ) )
+     {
+        ++i;
+        --j;
+
+        is_selected = true;
+        need_to_beat = true;
+        while( m_board->m_board[i][j] == Board::TYPE_BLACK
+               && i < m_board->BOARD_HEIGHT
+               && j >= 0  )
+          {
+
+            m_board->m_board[i][j] = Board::TYPE_BEAT;
+            ++i;
+            --j;
+        }
+
+     }
+
+
+    /*-----------------------------------------------------------------------*/
+    i = _i + 1;
+    j = _j + 1;
+
+        while( m_board->m_board[i][j] == Board::TYPE_BLACK
+               && i < m_board->BOARD_HEIGHT
+               && j >= 0 )
+        {
+            ++i;
+            ++j;
+        }
+
+
+        if(  m_board->m_board[i + 1][j + 1] == Board::TYPE_BLACK
+             && ( m_board->m_board[i][j] == enemy || m_board->m_board[i][j] == enemyKing ) )
+         {
+            ++i;
+            ++j;
+
+
+            is_selected = true;
+            need_to_beat = true;
+            while( m_board->m_board[i][j] == Board::TYPE_BLACK
+                   && i < m_board->BOARD_HEIGHT
+                   && j >= 0  )
+              {
+
+                m_board->m_board[i][j] = Board::TYPE_BEAT;
+                ++i;
+                ++j;
+            }
+
+         }
+
+
+    /*-----------------------------------------------------------------------*/
+     i = _i - 1;
+     j = _j - 1;
+
+     while( m_board->m_board[i][j] == Board::TYPE_BLACK
+                   && i < m_board->BOARD_HEIGHT
+                   && j >= 0 )
+            {
+                --i;
+                --j;
+            }
+
+            if(  m_board->m_board[i - 1][j - 1] == Board::TYPE_BLACK
+                 && ( m_board->m_board[i][j] == enemy || m_board->m_board[i][j] == enemyKing ) )
+             {
+                --i;
+                --j;
+
+
+                is_selected = true;
+                need_to_beat = true;
+                while( m_board->m_board[i][j] == Board::TYPE_BLACK
+                       && i < m_board->BOARD_HEIGHT
+                       && j >= 0  )
+                  {
+
+                    m_board->m_board[i][j] = Board::TYPE_BEAT;
+                    --i;
+                    --j;
+                }
+
+             }
+     /*-----------------------------------------------------------------------*/
+            i = _i - 1;
+            j = _j + 1;
+
+            while( m_board->m_board[i][j] == Board::TYPE_BLACK
+                          && i < m_board->BOARD_HEIGHT
+                          && j >= 0 )
+                   {
+                       --i;
+                       ++j;
+                   }
+
+                   if(  m_board->m_board[i - 1][j + 1] == Board::TYPE_BLACK
+                        && ( m_board->m_board[i][j] == enemy || m_board->m_board[i][j] == enemyKing ) )
+                    {
+                       --i;
+                       ++j;
+
+
+                       is_selected = true;
+                       need_to_beat = true;
+                       while( m_board->m_board[i][j] == Board::TYPE_BLACK
+                              && i < m_board->BOARD_HEIGHT
+                              && j >= 0  )
+                         {
+
+                           m_board->m_board[i][j] = Board::TYPE_BEAT;
+                           --i;
+                           ++j;
+                       }
+
+                    }
+
+
+   return need_to_beat;
 }
 
 
 void Controller::king_was_selected( int _i, int _j )
 {
+    unselect();
     if( ( white_moving && m_board->m_board[_i][_j] == Board::TYPE_WHITE_KING )
             || ( white_moving == false && m_board->m_board[_i][_j] == Board::TYPE_BLACK_KING ) )
      {
@@ -151,6 +316,44 @@ void Controller::king_was_selected( int _i, int _j )
      }
 
 }
+
+
+void Controller::king_beated( int _i, int _j )
+{
+    unselect();
+
+    //если ходим белыми
+   if( white_moving )
+   {
+
+      //меняем местами состояния
+      m_board->m_board[_i][_j] = Board::TYPE_WHITE_KING;
+      m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+
+
+      removeTheBattered(_i,_j);
+      m_currI = _i;
+      m_currJ = _j;
+   }
+   else
+   {
+       m_board->m_board[_i][_j] = Board::TYPE_BLACK_KING;
+           m_board->m_board[m_currI][m_currJ] = Board::TYPE_BLACK;
+
+       removeTheBattered(_i,_j);
+       m_currI = _i;
+       m_currJ = _j;
+   }
+
+
+
+   if( king_can_beat( m_currI, m_currJ ) == false )
+    {
+       white_moving = !white_moving;  //даем ход противнику
+       is_selected = false;
+    }
+}
+
 
 void Controller::if_moving( int _i, int _j )
 {
@@ -194,8 +397,13 @@ void Controller::selected(int _i, int _j)
 
    //если бьем
     if ( m_board->m_board[_i][_j] == Board::TYPE_BEAT )
-       beat( _i, _j );
-
+      {
+        if( m_board->m_board[m_currI][m_currJ] == Board::TYPE_BLACK_CHECKER
+                || m_board->m_board[m_currI][m_currJ] == Board::TYPE_WHITE_CHECKER )
+            beat( _i, _j );
+        else
+            king_beated( _i, _j);
+      }
 
         m_currI = _i;   //запоминаем координаты, что бы потом осуществить ход
         m_currJ = _j;
@@ -276,7 +484,7 @@ void Controller::checker_selected( int _i, int _j )
 
 bool Controller::white_checker_beat( int _i, int _j, int _stepI, int _stepJ )
 {
-    if( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_BLACK_CHECKER
+    if( ( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_BLACK_CHECKER || m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_BLACK_KING )
                 && m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] == Board::TYPE_BLACK )
         {
          m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] = Board::TYPE_BEAT;
@@ -288,7 +496,7 @@ bool Controller::white_checker_beat( int _i, int _j, int _stepI, int _stepJ )
 
 bool Controller::black_checker_beat( int _i, int _j, int _stepI, int _stepJ )
 {
-    if( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_WHITE_CHECKER
+    if( ( m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_WHITE_CHECKER || m_board->m_board[ _i + _stepI ][ _j + _stepJ ] == Board::TYPE_WHITE_KING )
                         && m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] == Board::TYPE_BLACK )
             {
                m_board->m_board[ _i + _stepI * 2 ][ _j + _stepJ * 2 ] = Board::TYPE_BEAT;
@@ -474,18 +682,48 @@ void Controller::beat(int _i,  int _j)
 
 void Controller::removeTheBattered(int _i, int _j)
 {
+    int tmpI = m_currI;
+    int tmpJ = m_currJ;
+
     if( _j > m_currJ && _i < m_currI )
-        m_board->m_board[m_currI - 1][ m_currJ + 1 ] = Board::TYPE_BLACK;
+       {
+        while( tmpI != _i && tmpJ != _j )
+         {
+            m_board->m_board[tmpI][ tmpJ ] = Board::TYPE_BLACK;
+            tmpJ++;
+            tmpI--;
+         }
+    }
 
     else if( _j < m_currJ && _i < m_currI )
-        m_board->m_board[m_currI - 1][ m_currJ - 1 ] = Board::TYPE_BLACK;
+    {
+     while( tmpI != _i && tmpJ != _j )
+      {
+         m_board->m_board[tmpI][ tmpJ ] = Board::TYPE_BLACK;
+         tmpJ--;
+         tmpI--;
+      }
+    }
 
     else if( _j > m_currJ && _i > m_currI )
-        m_board->m_board[m_currI + 1][ m_currJ + 1 ] = Board::TYPE_BLACK;
+    {
+     while( tmpI != _i && tmpJ != _j )
+      {
+         m_board->m_board[tmpI][ tmpJ ] = Board::TYPE_BLACK;
+         tmpJ++;
+         tmpI++;
+      }
+    }
 
     else if( _j < m_currJ && _i > m_currI )
-        m_board->m_board[m_currI + 1][ m_currJ - 1 ] = Board::TYPE_BLACK;
-
+    {
+     while( tmpI != _i && tmpJ != _j )
+      {
+         m_board->m_board[tmpI][ tmpJ ] = Board::TYPE_BLACK;
+         tmpJ--;
+         tmpI++;
+      }
+    }
 
     if( white_moving )
         --m_blackCount;
