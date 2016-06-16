@@ -9,6 +9,22 @@
 Board::Board(QWidget *parent)
     : QWidget(parent)
 {
+
+   restart();
+   setFixedSize( 800, 800 );
+
+   QPalette p;
+   QPixmap pm("../Checkers_v2/resources/Board.png");
+   pm = pm.scaled( 1415, 900 );
+   p.setBrush( this->backgroundRole(), QBrush( pm ) );
+
+   setPalette(p);
+
+}
+
+
+void Board::restart()
+{
     //задаем начальное состояние доски
    for ( int i = 0; i < BOARD_WIDTH; i++ )
    {
@@ -26,53 +42,22 @@ Board::Board(QWidget *parent)
                    m_board[i][j] = TYPE_WHITE;
        }
    }
-
-
-   setFixedSize( 800, 800 );
-
-   //начальный фон доски - коричневый.
-   //что бы под фигурами шашек было видно,
-   //что шашка стоит на "черной" клетке
-   //по-другому будут никому не нужные сложности
-   QPalette p;
-   QPixmap pm("../Checkers_v2/resources/Board.png");
-   pm = pm.scaled( 1415, 900 );
-   p.setBrush( this->backgroundRole(), QBrush( pm ) );
-
-   setPalette(p);
-
 }
-
 
 void Board::mousePressEvent(QMouseEvent *_e)
 {
     int i = _e->x()/100;
     int j = _e->y()/100;
 
-//    if(m_board[j][i] == TYPE_NEXT_STEP)
-//    {
-//        QMessageBox b("test", "next_step" + QString::number(i)+" "+QString::number(j),
-//                      QMessageBox::Information,
-//                      QMessageBox::Yes,
-//                      QMessageBox::No
-//                      , QMessageBox::Cancel);
-//        b.exec();
-//    }
-
-//    if(m_board[j][i] == TYPE_BLACK)
-//    {
-//        QMessageBox b("test", "black" + QString::number(i)+" "+QString::number(j),
-//                      QMessageBox::Information,
-//                      QMessageBox::Yes,
-//                      QMessageBox::No
-//                      , QMessageBox::Cancel);
-//        b.exec();
-//    }
-
     emit clicked( j, i );
 
 }
 
+void Board::keyPressEvent(QKeyEvent *_e)
+{
+    if( _e->key() == Qt::Key_Escape );
+        //emit menu();
+}
 
 void Board::paintEvent( QPaintEvent* _e )
 {
@@ -87,10 +72,8 @@ void Board::paintEvent( QPaintEvent* _e )
             switch ( m_board[j][i]  )
             {
             case TYPE_BLACK:;
-                m_painter.drawBlackCell(i,j);
                 break;
             case TYPE_WHITE:
-                m_painter.drawWhiteCell( i, j);
                 break;
             case TYPE_BLACK_CHECKER:
                 m_painter.drawBlackChecker( i, j );

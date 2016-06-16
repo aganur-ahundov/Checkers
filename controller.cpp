@@ -3,6 +3,7 @@
 #include <QPaintEvent>
 #include "board.h"
 #include <QMessageBox>
+#include <QKeyEvent>
 
 
 Controller::Controller( QWidget* _parent )
@@ -10,7 +11,7 @@ Controller::Controller( QWidget* _parent )
 {
         //у игроков по 12 шашек в начале
       m_blackCount = 12;
-      m_whiteCount = 12;
+      m_whiteCount = 1;
 
       //задаем координаты, которых нет на доске
       m_currI = -1;
@@ -27,12 +28,21 @@ Controller::Controller( QWidget* _parent )
 
 }
 
+void Controller::hide()
+{
+    m_board->hide();
+}
+
 
 Controller::~Controller()
 {
     delete m_board;
 }
 
+void Controller::restart()
+{
+    m_board->restart();
+}
 
 void Controller::start_game()
 {
@@ -414,6 +424,17 @@ void Controller::selected(int _i, int _j)
 
     //перересуем доску
       emit m_board->repaint();
+
+    check_for_win();
+}
+
+
+void Controller::check_for_win()
+{
+    if( m_whiteCount == 0 )
+        emit black_player_won();
+    else if ( m_blackCount == 0 )
+        emit white_player_won();
 }
 
 

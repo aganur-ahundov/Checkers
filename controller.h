@@ -14,10 +14,12 @@ public:
 
 public:
     void start_game();  //старт
+    void restart();
 
 public slots:
     void selected ( int _i, int _j ); //обрабатываем нажатие мыши
     void show();                       //переопределяем функцию
+    void hide();
 
 private:
     void if_moving( int _i, int _j );
@@ -42,7 +44,16 @@ private: //все необходимые функции для реализац�
     bool king_can_beat                  ( int _i, int _j );
     void king_beated                    ( int _i, int _j );
 
+private:
+    void check_for_win();
 
+signals:
+    void white_player_won();
+    void black_player_won();
+    void menu();
+
+protected:
+  //  void keyPressEvent( QKeyEvent* _e );
 
 private:
     Board* m_board;     //игровая доска
@@ -56,5 +67,6 @@ private:
     bool white_moving;   //чей черед ходить. 1 - белые, 2 - черные
     bool is_selected;
 };
+
 
 #endif // CONTROLLER_H

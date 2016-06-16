@@ -49,11 +49,13 @@ public:
     //доступ к полям есть у класса контроллер, но вдруг пригодиться в других случаях
     Cell getType   ( int _x, int _j ) const;   //а вдруг пригодиться
     void changeType( int _x, int _j, Cell _t );//вряд ли, но все же
+    void restart();
 
 protected:
     //переопределяем события
     void mousePressEvent( QMouseEvent* _e );
     void paintEvent( QPaintEvent* _e );
+    void keyPressEvent( QKeyEvent* _e );
 
 private:
     Cell m_board[BOARD_WIDTH][BOARD_HEIGHT]; //матрица - поле
